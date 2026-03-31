@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Database
+*.db
+
 # Python
 venv/
 __pycache__/

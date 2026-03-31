@@ -1,84 +1,153 @@
 import React, { useState } from 'react'
 
+const PRIORITIES = [
+  { value: 1, label: 'Low', cls: 'p1' },
+  { value: 2, label: 'Med', cls: 'p2' },
+  { value: 3, label: 'High', cls: 'p3' },
+  { value: 4, label: 'Urgent', cls: 'p4' },
+]
+
 const today = () => new Date().toISOString().split('T')[0]
 
-export default function AddTaskForm({ onAdd, syncing }) {
+export default function AddTaskForm({ onAdd, syncing, labels }) {
   const [title, setTitle] = useState('')
   const [notes, setNotes] = useState('')
   const [date, setDate] = useState(today())
   const [time, setTime] = useState('')
+  const [priority, setPriority] = useState(0)
+  const [selectedLabels, setSelectedLabels] = useState([])
+  const [subtaskInputs, setSubtaskInputs] = useState([''])
   const [open, setOpen] = useState(false)
 
   const submit = async (e) => {
     e.preventDefault()
     if (!title.trim()) return
-    await onAdd({ title: title.trim(), notes: notes.trim(), date, time })
-    setTitle(''); setNotes(''); setDate(today()); setTime(''); setOpen(false)
+    const subtasks = subtaskInputs.filter(s => s.trim())
+    await onAdd({
+      title: title.trim(),
+      notes: notes.trim(),
+      date,
+      time,
+      priority,
+      label_ids: selectedLabels,
+      subtasks,
+    })
+    setTitle(''); setNotes(''); setDate(today()); setTime('')
+    setPriority(0); setSelectedLabels([]); setSubtaskInputs(['']); setOpen(false)
   }
 
-  const inp = {
-    background: 'var(--surface2)', border: '0.5px solid var(--border)',
-    borderRadius: 'var(--radius)', color: 'var(--text)', padding: '9px 12px',
-    outline: 'none', width: '100%', transition: 'border-color 0.15s',
+  const toggleLabel = (id) => {
+    setSelectedLabels(prev =>
+      prev.includes(id) ? prev.filter(l => l !== id) : [...prev, id]
+    )
+  }
+
+  const updateSubtask = (i, val) => {
+    const updated = [...subtaskInputs]
+    updated[i] = val
+    // Auto-add new row if typing in last field
+    if (i === updated.length - 1 && val.trim()) {
+      updated.push('')
+    }
+    setSubtaskInputs(updated)
   }
 
   return (
-    <form onSubmit={submit} style={{
-      background: 'var(--surface)', border: '0.5px solid var(--border)',
-      borderRadius: 'var(--radius-lg)', padding: '1rem 1.25rem', marginBottom: '1.25rem'
-    }}>
-      <div style={{ display: 'flex', gap: 8, marginBottom: open ? 12 : 0 }}>
+    <form className="add-form" onSubmit={submit}>
+      <div className="add-form-row">
         <input
+          className="add-input"
           value={title}
           onChange={e => { setTitle(e.target.value); if (!open && e.target.value) setOpen(true) }}
+          onFocus={() => setOpen(true)}
           placeholder="Add a task..."
-          style={{ ...inp, flex: 1, fontSize: 15 }}
-          onFocus={e => { setOpen(true); e.target.style.borderColor = 'var(--accent)' }}
-          onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
         />
-        <button type="submit" disabled={syncing || !title.trim()} style={{
-          background: title.trim() ? 'var(--accent)' : 'var(--surface2)',
-          color: title.trim() ? 'var(--accent-text)' : 'var(--text3)',
-          border: 'none', borderRadius: 'var(--radius)', padding: '9px 18px',
-          cursor: title.trim() ? 'pointer' : 'default', fontWeight: 500,
-          fontSize: 13, transition: 'background 0.15s, color 0.15s', whiteSpace: 'nowrap'
-        }}>
+        <button
+          type="submit"
+          className="btn-add"
+          disabled={syncing || !title.trim()}
+        >
           {syncing ? 'Syncing...' : '+ Add'}
         </button>
       </div>
 
       {open && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="add-extras">
           <textarea
+            className="add-textarea"
             value={notes}
             onChange={e => setNotes(e.target.value)}
             placeholder="Notes (optional)"
             rows={2}
-            style={{ ...inp, resize: 'none', lineHeight: 1.5 }}
-            onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-            onBlur={e => e.target.style.borderColor = 'var(--border)'}
           />
-          <div style={{ display: 'flex', gap: 8 }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontSize: 11, color: 'var(--text2)', display: 'block', marginBottom: 4 }}>Date</label>
-              <input type="date" value={date} onChange={e => setDate(e.target.value)}
-                style={{ ...inp }}
-                onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                onBlur={e => e.target.style.borderColor = 'var(--border)'}
-              />
+
+          <div className="add-meta-row">
+            <div>
+              <div className="add-meta-label">Date</div>
+              <input type="date" className="meta-input" value={date} onChange={e => setDate(e.target.value)} />
             </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ fontSize: 11, color: 'var(--text2)', display: 'block', marginBottom: 4 }}>Time</label>
-              <input type="time" value={time} onChange={e => setTime(e.target.value)}
-                style={{ ...inp }}
-                onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-                onBlur={e => e.target.style.borderColor = 'var(--border)'}
-              />
+            <div>
+              <div className="add-meta-label">Time</div>
+              <input type="time" className="meta-input" value={time} onChange={e => setTime(e.target.value)} />
             </div>
           </div>
-          <p style={{ fontSize: 11, color: 'var(--text3)', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ color: 'var(--accent)' }}>✓</span> Will be added to your Google Calendar
-          </p>
+
+          <div>
+            <div className="add-meta-label">Priority</div>
+            <div className="priority-selector">
+              {PRIORITIES.map(p => (
+                <button
+                  key={p.value}
+                  type="button"
+                  className={`priority-btn ${p.cls} ${priority === p.value ? 'active' : ''}`}
+                  onClick={() => setPriority(priority === p.value ? 0 : p.value)}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {labels && labels.length > 0 && (
+            <div>
+              <div className="add-meta-label">Labels</div>
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                {labels.map(l => (
+                  <button
+                    key={l.id}
+                    type="button"
+                    className="task-label-tag"
+                    style={{
+                      background: selectedLabels.includes(l.id) ? l.color + '30' : 'var(--surface2)',
+                      color: selectedLabels.includes(l.id) ? l.color : 'var(--text3)',
+                      border: `1px solid ${selectedLabels.includes(l.id) ? l.color : 'var(--border)'}`,
+                      cursor: 'pointer', padding: '4px 10px', borderRadius: 6, fontSize: 11,
+                    }}
+                    onClick={() => toggleLabel(l.id)}
+                  >
+                    {l.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <div className="add-meta-label">Subtasks</div>
+            {subtaskInputs.map((val, i) => (
+              <input
+                key={i}
+                className="subtask-add-input"
+                value={val}
+                onChange={e => updateSubtask(i, e.target.value)}
+                placeholder={i === 0 ? 'Add a subtask...' : 'Add another...'}
+              />
+            ))}
+          </div>
+
+          <div className="sync-hint">
+            <span className="check">✓</span> Will be added to your Google Calendar
+          </div>
         </div>
       )}
     </form>

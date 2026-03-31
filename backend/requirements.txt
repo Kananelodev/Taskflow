@@ -7,3 +7,5 @@ google-api-python-client==2.127.0
 python-dotenv==1.0.1
 pydantic==2.7.1
 python-multipart==0.0.9
+sqlalchemy==2.0.30
+cryptography==42.0.8
