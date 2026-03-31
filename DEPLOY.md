@@ -11,6 +11,7 @@
    - **Environment**: Python 3
 4. Add environment variables:
    ```
+   PYTHON_VERSION=3.11.8
    GOOGLE_CLIENT_ID=<your_id>
    GOOGLE_CLIENT_SECRET=<your_secret>
    GOOGLE_REDIRECT_URI=https://YOUR_RENDER_URL/auth/callback
