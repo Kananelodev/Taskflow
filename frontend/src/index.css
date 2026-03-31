@@ -1,0 +1,39 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f0f0f;
+  --surface: #181818;
+  --surface2: #222222;
+  --border: #2a2a2a;
+  --border2: #333333;
+  --text: #f0ede8;
+  --text2: #888;
+  --text3: #555;
+  --accent: #c8f064;
+  --accent-dim: rgba(200, 240, 100, 0.12);
+  --accent-text: #0f0f0f;
+  --danger: #ff5c5c;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --font: 'DM Sans', sans-serif;
+  --mono: 'DM Mono', monospace;
+}
+
+html { font-size: 16px; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+input, textarea, button, select {
+  font-family: var(--font);
+  font-size: 14px;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
